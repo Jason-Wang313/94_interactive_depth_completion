@@ -1,16 +1,30 @@
-Submission-hardening experiment for paper 94 interactive_depth_completion
-Seven seeds, 600 episodes per seed, strong baselines, ablations, stress sweep, and negative cases.
-observed_only_behavior_clone hidden_mode_shift mean_success=0.4112 ci95=0.0228 tail=0.5888
-observed_only_behavior_clone combined_stress mean_success=0.3281 ci95=0.0108 tail=0.6719
-data_augmentation_wam hidden_mode_shift mean_success=0.4769 ci95=0.0134 tail=0.5231
-data_augmentation_wam combined_stress mean_success=0.4141 ci95=0.0151 tail=0.5859
-scalar_uncertainty_planner hidden_mode_shift mean_success=0.5462 ci95=0.0157 tail=0.4538
-scalar_uncertainty_planner combined_stress mean_success=0.4919 ci95=0.0164 tail=0.5081
-ensemble_disagreement_planner hidden_mode_shift mean_success=0.6055 ci95=0.0145 tail=0.3945
-ensemble_disagreement_planner combined_stress mean_success=0.5426 ci95=0.0120 tail=0.4574
-conformal_risk_filter hidden_mode_shift mean_success=0.5929 ci95=0.0131 tail=0.4071
-conformal_risk_filter combined_stress mean_success=0.5529 ci95=0.0144 tail=0.4471
-proposed_branch_mechanism hidden_mode_shift mean_success=0.6847 ci95=0.0134 tail=0.3153
-proposed_branch_mechanism combined_stress mean_success=0.6645 ci95=0.0174 tail=0.3355
-oracle_branch_upper_bound hidden_mode_shift mean_success=0.7531 ci95=0.0115 tail=0.2469
-oracle_branch_upper_bound combined_stress mean_success=0.7352 ci95=0.0146 tail=0.2648
+Paper 94: interactive_depth_completion evidence audit
+Seeds: 7; tasks: 4; splits: 5; episodes per seed/task: 72
+Evidence type: deterministic local active-perception manipulation simulator, not robot hardware validation.
+Terminal decision: KILL_ARCHIVE
+Reason: Proposed action-critical probing does not clear the ICLR-main gate: it fails to significantly beat the strongest non-oracle baseline (active_view_selection) on combined-stress task success, and ablations/baselines remain competitive.
+
+Combined-stress ranking by task success:
+- oracle_depth_completion: success=1.0000 +/- 0.0000; AC-RMSE=0.0057; collision=0.0000; damage=0.0000; regret=0.0016
+- active_view_selection: success=0.7951 +/- 0.0797; AC-RMSE=0.0434; collision=0.0476; damage=0.0000; regret=0.2670
+- proposed_action_critical_interactive_depth: success=0.5144 +/- 0.1065; AC-RMSE=0.0560; collision=0.1230; damage=0.1528; regret=0.4411
+- ensemble_depth_completion: success=0.4836 +/- 0.1094; AC-RMSE=0.0597; collision=0.1324; damage=0.0000; regret=0.4203
+- uncertainty_guided_probe: success=0.4430 +/- 0.0994; AC-RMSE=0.0545; collision=0.1324; damage=0.2069; regret=0.4615
+- visuotactile_probe: success=0.4127 +/- 0.0995; AC-RMSE=0.0614; collision=0.1548; damage=0.1319; regret=0.4909
+- gaussian_splat_uncertainty: success=0.2078 +/- 0.0711; AC-RMSE=0.0794; collision=0.2331; damage=0.0000; regret=0.5798
+- learned_depth_completion: success=0.2029 +/- 0.0687; AC-RMSE=0.0751; collision=0.2619; damage=0.0000; regret=0.5633
+- raw_depth_policy: success=0.0015 +/- 0.0016; AC-RMSE=0.1463; collision=0.4931; damage=0.0000; regret=0.9087
+
+Gate details:
+- Strongest non-oracle success baseline: active_view_selection (0.7951)
+- Proposed success: 0.5144
+- Best non-oracle AC-RMSE baseline: active_view_selection (0.0434)
+- Proposed AC-RMSE: 0.0560
+- Proposed collision: 0.1230; cost: 0.0656; damage: 0.1528
+- Ablations matching full within 0.015 success: none
+
+Failure cases:
+- leaf_occluded_fruit_grasp: success=0.2302, collision=0.2063, damage=0.2282; action-critical probing improves depth but fragile contact damage erases the closed-loop advantage
+- occluded_bin_grasping: success=0.8313, collision=0.0278, damage=0.1151; active view selection recovers enough occluded geometry without physical contact cost
+- shelf_insertion_clearance: success=0.7520, collision=0.0595, damage=0.0972; tight clearance rewards conservative uncertainty baselines as much as targeted probing
+- transparent_container_lift: success=0.2440, collision=0.1984, damage=0.1706; specular depth plus probe noise leaves uncertainty-guided and tactile baselines competitive
