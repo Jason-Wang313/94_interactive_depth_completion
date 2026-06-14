@@ -4,8 +4,27 @@ Decision: KILL_ARCHIVE
 
 ICLR main-conference readiness: NO.
 
-Reason: The strongest locally available evidence is synthetic and template-generated. The paper lacks real-robot or high-fidelity simulator validation, implemented learned baselines, manual full-paper related-work depth, and paper-specific empirical figures. These are not recoverable without new external experiments or a substantially new research project.
+## Why It Fails
 
-Honest terminal action: archive/kill for ICLR main. Do not submit this paper to ICLR main in its current form.
+The strongest defensible claim was that action-critical physical probing should outperform passive completion, uncertainty baselines, active view selection, and generic tactile probing under combined manipulation stress. The benchmark falsifies that claim.
 
-Revival condition: rebuild as a real empirical robotics paper with implemented model, strong real baselines, manual related work, and deployment evidence.
+Active view selection is the strongest non-oracle combined-stress baseline:
+
+- active_view_selection task success: 0.795 +/- 0.080.
+- proposed_action_critical_interactive_depth task success: 0.514 +/- 0.106.
+- Paired proposed-minus-active-view success difference: -0.28075 +/- 0.07128.
+- Proposed also has higher action-critical RMSE, higher collision rate, higher planning regret, higher cost, and nonzero probe damage.
+
+## Honest Terminal Action
+
+Archive/kill for ICLR main. Do not submit this paper to ICLR main in its current form.
+
+## Revival Condition
+
+The idea would need a substantially new empirical project:
+
+- Real robot or high-fidelity simulator evidence.
+- Implemented learned depth-completion and active-view baselines.
+- A physical probing system that beats active view selection without unacceptable damage or cost.
+- Manual related-work synthesis and qualitative rollouts.
+- A new terminal gate showing the proposed mechanism wins on task success, action-critical geometry, collision safety, regret, and damage/cost.

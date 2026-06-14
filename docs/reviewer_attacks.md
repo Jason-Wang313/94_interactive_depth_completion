@@ -1,8 +1,10 @@
 # Reviewer Attacks
 
 - This is only uncertainty with different words.
-- The evidence is synthetic and may not transfer to real hardware.
-- The hostile prior work already contains contact-aware world models.
+- Active view selection may recover enough geometry without touching the scene.
+- Physical probing may create damage/cost that erases local depth improvements.
+- The evidence is local simulation and may not transfer to real hardware.
+- Hostile prior work already contains depth completion, active perception, tactile grasping, and uncertainty-aware planning.
 - The proposed mechanism may be too specialized for broad ICLR interest.
 
-Response: the paper must emphasize branch semantics, explicit failure conditions, and honest synthetic scope.
+Response after v4: the strongest attack is confirmed. Active view selection beats the proposed method under combined stress, so the paper is killed/archived rather than rewritten as a submission.

@@ -1,13 +1,26 @@
 # Novelty Boundary Map
 
 ## Crowded Territory
-- Bigger data/model scaling.
-- New benchmark only.
+
 - Generic active learning or uncertainty.
-- Combining a planner with a learned policy without a new state/action object.
+- Passive learned depth completion.
+- Gaussian-splat or ensemble uncertainty estimates.
+- Active view selection for occlusion reduction.
+- Visuo-tactile probing and contact-aware grasping.
+- Planner wrappers around perception uncertainty.
 
-## Claimed Boundary
-Interactive depth completion keeps action-critical alternatives explicit until a physical observation collapses them.
+## Claimed Boundary Tested
 
-## What Would Falsify The Claim
-If observed-only baselines match the adverse-mode coverage and closed-loop success of the proposed branch-aware mechanism, the paper should be revised or killed.
+The only plausible boundary was action-critical physical probing: a robot should touch only the uncertain depth regions that affect the next manipulation action, improving local geometry enough to change the action safely.
+
+## Falsification Result
+
+The boundary is falsified by the v4 benchmark. Active view selection dominates the proposed physical probing method under combined stress:
+
+- Higher task success.
+- Lower action-critical RMSE.
+- Lower collision rate.
+- Lower planning regret.
+- No probe damage.
+
+Decision: KILL_ARCHIVE. The novelty boundary is not defensible for ICLR main without substantially new evidence and a stronger physical probing mechanism.
