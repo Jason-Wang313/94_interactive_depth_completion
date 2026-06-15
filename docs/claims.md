@@ -6,7 +6,7 @@ Interactive depth completion is useful only if the robot probes regions that are
 
 ## Supported Claims
 
-- The v4 benchmark is reproducible and paper-specific: four manipulation tasks, five distribution shifts, nine methods, seven seeds, ablations, stress curves, paired task/seed comparisons, and failure cases.
+- The v4.1 rerun confirms the benchmark is reproducible and paper-specific: four manipulation tasks, five distribution shifts, nine methods, seven seeds, ablations, stress curves, paired task/seed comparisons, and failure cases.
 - The proposed mechanism improves over raw depth, learned depth completion, Gaussian-splat uncertainty, ensemble completion, visuo-tactile probing, and uncertainty-guided probing on some combined-stress metrics.
 - The mechanism fails the main closed-loop gate because active view selection is stronger without physical contact.
 

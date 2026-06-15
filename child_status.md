@@ -1,10 +1,10 @@
 # Child Status 94
 
-Current stage: ICLR main gate terminal
-Last update: 2026-06-14 16:13:24 +01:00
+Current stage: ICLR main v4.1 continuation audit terminal
+Last update: 2026-06-15 13:07:23 +0100
 PDF: C:/Users/wangz/Downloads/94.pdf
 GitHub: https://github.com/Jason-Wang313/94_interactive_depth_completion
-Submission-hardening version: v4
+Submission-hardening version: v4.1 rerun audit
 Terminal decision: KILL_ARCHIVE
 ICLR main ready: no
 

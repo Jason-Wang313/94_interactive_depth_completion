@@ -6,6 +6,7 @@
 \usepackage{booktabs}
 \usepackage{graphicx}
 \usepackage{microtype}
+\raggedbottom
 
 \title{Interactive Depth Completion: A Negative Evidence Audit for Action-Critical Physical Probing}
 \author{Anonymous Authors}
@@ -29,7 +30,7 @@ The hostile literature pool makes generic novelty claims unsafe. The closest thr
 
 \section{Benchmark}
 
-The benchmark is a deterministic local active-perception manipulation simulator. It is not robot hardware validation and is not high-fidelity physics. Its purpose is narrower: test whether the central mechanism remains plausible after strong local baselines and stress tests.
+The benchmark is a deterministic local active-perception manipulation simulator. It is not robot hardware validation and is not high-fidelity physics. Its purpose is narrower: test whether the central mechanism remains plausible after strong local baselines and stress tests. A 2026-06-15 continuation rerun reproduced the same terminal gate outcome.
 
 \paragraph{Tasks.}
 We evaluate occluded bin grasping, shelf insertion with tight clearance, transparent container lifting, and leaf-occluded fruit grasping.
@@ -130,6 +131,6 @@ This audit is intentionally honest about its limits. The benchmark is determinis
 
 \section{Conclusion}
 
-Interactive depth completion through action-critical physical probing is not ICLR-main ready. The proposed mechanism is plausible internally but loses to active view selection under the main stress gate. The correct terminal action is \textbf{KILL/ARCHIVE}. A revival would require a substantially new empirical project in which physical probing beats active view selection on task success, action-critical geometry, collision safety, planning regret, and damage/cost in real robot or high-fidelity simulator experiments.
+Interactive depth completion through action-critical physical probing is not ICLR-main ready. The rebuilt and rerun evidence shows that the proposed mechanism is plausible internally but loses to active view selection under the main stress gate. The correct terminal action is \textbf{KILL/ARCHIVE}. A revival would require a substantially new empirical project in which physical probing beats active view selection on task success, action-critical geometry, collision safety, planning regret, and damage/cost in real robot or high-fidelity simulator experiments.
 
 \end{document}
