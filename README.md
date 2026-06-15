@@ -1,6 +1,6 @@
 # 94 Interactive Depth Completion
 
-Submission-hardening version: v4
+Submission-hardening version: v4.1 rerun audit
 
 Terminal decision: KILL_ARCHIVE for ICLR main conference.
 
@@ -11,6 +11,8 @@ This repository is a negative evidence audit for the generated robotics idea:
 The rebuilt benchmark tests the strongest defensible version of the idea: action-critical probing should improve the local depth cells that matter to manipulation, and that improvement should translate into better closed-loop outcomes than passive completion, Gaussian/ensemble uncertainty, active view selection, visuo-tactile probing, and uncertainty-guided probing.
 
 It does not clear that bar. Under combined interactive stress, active view selection is the strongest non-oracle baseline:
+
+The 2026-06-15 continuation rerun reproduced the same terminal decision: active view selection remains stronger than action-critical physical probing on success, action-critical RMSE, collisions, regret, and damage.
 
 | Method | Task success | Action-critical RMSE | Collision | Probe damage |
 | --- | ---: | ---: | ---: | ---: |

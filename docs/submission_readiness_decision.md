@@ -8,6 +8,8 @@ ICLR main-conference readiness: NO.
 
 The strongest defensible claim was that action-critical physical probing should outperform passive completion, uncertainty baselines, active view selection, and generic tactile probing under combined manipulation stress. The benchmark falsifies that claim.
 
+The 2026-06-15 v4.1 continuation rerun reproduced the same decision.
+
 Active view selection is the strongest non-oracle combined-stress baseline:
 
 - active_view_selection task success: 0.795 +/- 0.080.

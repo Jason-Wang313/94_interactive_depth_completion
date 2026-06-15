@@ -65,3 +65,27 @@ Action: Archive; internal ablation support cannot rescue a losing external compa
 Verdict: Terminal condition reached.
 
 Action: Mark KILL_ARCHIVE and stop Paper 94 after public repo/PDF/report updates.
+
+## v4 Rerun Gate Round 9
+
+Attack: The 2026-06-15 rerun might reverse the active-view-selection dominance.
+
+Verdict: Failed. Active view selection reaches task success `0.79514`, while the proposed method reaches `0.51438`; paired proposed-minus-active-view success difference is `-0.28075 +/- 0.07128`.
+
+Action: Keep KILL_ARCHIVE.
+
+## v4 Rerun Gate Round 10
+
+Attack: Physical probing might still win on action-critical geometry or safety.
+
+Verdict: Failed. Proposed action-critical RMSE is worse by `+0.01259 +/- 0.00203`, collision rate is worse by `+0.07540 +/- 0.02471`, regret is worse by `+0.17412 +/- 0.02408`, and probe damage is worse by `+0.15278 +/- 0.02223`.
+
+Action: Do not claim ICLR-main readiness.
+
+## v4 Rerun Gate Round 11
+
+Attack: Internal ablations might rescue the mechanism.
+
+Verdict: Insufficient. The full method is the best internal variant on success, but the external active-view baseline remains much stronger and has zero probe damage.
+
+Action: Preserve the negative audit and archive.

@@ -28,3 +28,11 @@
 - Generated paper-specific figures and LaTeX tables.
 - Found that active view selection dominates proposed physical probing under combined stress.
 - Terminal decision remains: KILL_ARCHIVE.
+
+## v4.1 - 2026-06-15 Rerun Audit
+
+- Re-ran `python -m py_compile src\run_experiment.py` and the full `python src\run_experiment.py`.
+- Confirmed active view selection remains the strongest non-oracle combined-stress baseline.
+- Confirmed proposed-minus-active-view task-success difference is `-0.28075 +/- 0.07128`.
+- Confirmed proposed action-critical RMSE, collision rate, planning regret, and probe damage are all worse than active view selection.
+- Updated child docs and paper source to keep the v4 KILL_ARCHIVE decision evidence-bound.

@@ -2,6 +2,7 @@
 
 ## What Reproduces
 
+- [x] 2026-06-15 rerun log: `logs/94_interactive_depth_completion_continuation_rerun_20260615.log`
 - [x] `python src/run_experiment.py`
 - [x] `results/metrics.csv`
 - [x] `results/per_task_metrics.csv`
