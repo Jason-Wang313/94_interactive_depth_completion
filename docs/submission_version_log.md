@@ -36,3 +36,14 @@
 - Confirmed proposed-minus-active-view task-success difference is `-0.28075 +/- 0.07128`.
 - Confirmed proposed action-critical RMSE, collision rate, planning regret, and probe damage are all worse than active view selection.
 - Updated child docs and paper source to keep the v4 KILL_ARCHIVE decision evidence-bound.
+
+## v5 - 2026-06-22 Expanded Submission Audit
+
+- Froze `docs/paper94_expanded_submission_plan_20260622.md` before execution.
+- Replaced the v4 runner with a 10-seed, 6-task, 8-split, 14-method CPU-only audit.
+- Generated 215,040 main rollout rows, 76,800 ablation rows, 604,800 stress rows, 69,120 fixed-risk rows, and 24 negative cases.
+- Added fixed-risk, stress-degradation, split-frontier, baseline-rejection, and ablation-delta analyses.
+- Generated a 25-page ICLR-style PDF with bright boxed clickable citations and 180 references.
+- Validated `C:/Users/wangz/Downloads/94.pdf`; SHA256 `122B4E1F84A7BBA741DC56FEB2F26A2C001F25D986880057D18D7AB796BF71F3`.
+- Confirmed public `.csv.gz` fallback validation for the large stress-sweep artifact.
+- Terminal decision remains: KILL_ARCHIVE.

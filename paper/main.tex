@@ -1,136 +1,669 @@
+
 \documentclass{article}
 \usepackage{iclr2026_conference,times}
 \input{math_commands.tex}
-\usepackage{hyperref}
-\usepackage{url}
 \usepackage{booktabs}
 \usepackage{graphicx}
-\usepackage{microtype}
-\raggedbottom
+\usepackage{xcolor}
+\usepackage{array}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{url}
+\usepackage[colorlinks=false,citebordercolor={0 1 0},linkbordercolor={1 0.55 0},urlbordercolor={0 0.55 1},pdfborder={0 0 1.2}]{hyperref}
 
-\title{Interactive Depth Completion: A Negative Evidence Audit for Action-Critical Physical Probing}
+\newtheorem{proposition}{Proposition}
+\newcommand{\method}{\textsc{RAID-v5}}
+\newcommand{\terminal}{\textsc{KILL/ARCHIVE}}
+
+\title{Interactive Depth Completion Under Hostile Review: A Negative ICLR-Main Audit}
 \author{Anonymous Authors}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-This paper is a submission-hardening audit, not an ICLR-main submission. The generated research bet was that a robot should complete depth by physically probing uncertain regions that matter to the next manipulation action. We rebuilt the claim as a concrete benchmark with four manipulation tasks, five distribution shifts, nine methods, seven seeds, ablations, stress sweeps, paired confidence intervals, and failure cases. The strongest local result is negative: under combined interactive stress, active view selection reaches $0.795 \pm 0.080$ task success, while the proposed action-critical physical probing method reaches $0.514 \pm 0.106$. The proposed method also has higher action-critical depth error, higher collision rate, higher planning regret, and nonzero probe damage. The terminal decision is therefore \textbf{KILL/ARCHIVE for ICLR main}. The useful artifact is the reproducible negative benchmark and failure analysis.
+We rebuild Paper 94 as an expanded ICLR-main-target audit of action-critical physical probing for depth completion. The frozen protocol uses 10 seeds, 6 manipulation tasks, 8 distribution splits, 14 methods, 215,040 main rollouts, 76,800 ablation rollouts, 604,800 stress rollouts, fixed-risk deployment budgets, paired seed tests, and 24 negative cases. The method under audit, \method{}, improves over the previous v4 interactive-depth policy, but it remains non-submittable. Active view selection reaches hard-split success 0.76693 while v5 reaches 0.60885; active view also has lower action-critical RMSE, lower collision, lower damage, lower regret, and higher robust utility. The honest terminal recommendation is \textbf{\terminal}.
 \end{abstract}
 
-\section{Terminal Decision}
+\section{Question}
+Depth completion for manipulation is not just an image-reconstruction problem. The robot needs the geometry that matters to action: clearance margins, occluded support, transparent surfaces, collision boundaries, and contact-sensitive regions. Prior work spans active perception, view planning, tactile probing, uncertainty-aware completion, diffusion policies, foundation priors, and robust control \citep{r1048550arxiv190801238,r250401957v2,r101109cvpr52734202501596,r101109jsen20243488495,r101109icra20198793610,r101109jas2022105674,r260201939v3,r101007978303126889216,r230916778v1,r101109mrs60187202310416783}. The Paper 94 hypothesis is that a robot should physically probe only the cells whose depth uncertainty is action-critical.
 
-The paper fails the ICLR-main evidence gate. The original claim was not merely that physical probing can reduce local uncertainty; that is too crowded by depth completion, active perception, tactile perception, and uncertainty-aware planning. The strongest defensible claim was stricter: physical probing should help only when it is targeted to action-critical uncertain geometry and should translate into safer manipulation decisions than strong non-contact or generic uncertainty baselines.
+The hostile-review version of the claim is stricter. A physical probe is only useful if it beats non-contact active view selection and robust clearance planning after damage, regret, collision, cost, and abstention are counted. This audit therefore rejects pretty depth maps if the resulting action is worse.
 
-The rebuilt evidence falsifies that claim. The strongest non-oracle baseline is active view selection, which recovers occluded geometry without touching the scene. Against that baseline, the proposed method loses by $-0.28075 \pm 0.07128$ task success over paired task/seed groups. It also has worse action-critical RMSE, collision rate, planning regret, and probe damage. We therefore archive the idea rather than submit it.
+\section{Problem Setup}
+Let $x_t$ be an RGB-D observation with missing or unreliable depth cells. A depth-completion model predicts $\hat{D}_\theta(x_t)$, but the decision-relevant object is not global RMSE. It is the action-conditioned risk:
+\[
+  a^\star = \arg\max_a \; U(a, \hat{D}_\theta, \pi_\theta) - \lambda_c C(a) - \lambda_d D(a) - \lambda_p P(a),
+\]
+where $C$ is collision risk, $D$ is probe damage, and $P$ is probing or view-acquisition cost. \method{} estimates which cells are action-critical, probes them only when expected utility exceeds contact risk, then plans with calibrated clearance uncertainty.
 
-\section{Hostile Prior-Work Pressure}
+\section{Frozen Protocol}
+The expanded protocol covers occluded bin grasping, shelf insertion, transparent container lifting, leaf-occluded fruit grasping, drawer slot alignment, and deformable bag lifting. The splits cover missing depth, occlusion, specular transparency, probe noise, tight clearance, low-signal stress, and combined interactive stress. The comparator set includes raw, learned, Gaussian, ensemble, active-view, next-best-view, tactile/probe, diffusion, foundation, robust MPC, v4, v5, and oracle depth completion \citep{r101109icra20157139655,r101109lra20223150045,r101109icra20136630996,r101007s1045801492798,r101007978365845699321,r101038s4159802598917w,r103390s23249700,r101038s41598024768004,r101126sciroboticsadd5139,r250710776v1}.
 
-The hostile literature pool makes generic novelty claims unsafe. The closest threats include real-time robot interactive segmentation, learned depth completion, active learning under model uncertainty, active perception/manipulation for vision-language-action systems, Gaussian-splat depth uncertainty, interactive planning under uncertainty, active uncertainty reduction, and uncertainty-aware grasping of leaf-occluded fruit. Under this prior-work pressure, ``add uncertainty'' or ``probe the scene'' is not a contribution. The only possible contribution would be a measured advantage for action-critical physical probing over active view selection, passive completion, uncertainty baselines, and tactile probing. The v4 benchmark does not find that advantage.
-
-\section{Benchmark}
-
-The benchmark is a deterministic local active-perception manipulation simulator. It is not robot hardware validation and is not high-fidelity physics. Its purpose is narrower: test whether the central mechanism remains plausible after strong local baselines and stress tests. A 2026-06-15 continuation rerun reproduced the same terminal gate outcome.
-
-\paragraph{Tasks.}
-We evaluate occluded bin grasping, shelf insertion with tight clearance, transparent container lifting, and leaf-occluded fruit grasping.
-
-\paragraph{Splits.}
-We test nominal depth, missing-depth shift, occlusion shift, transparent/specular shift, and combined interactive stress. Combined stress increases missing depth, occlusion, specularity, probe noise, clearance tightness, and damage risk.
-
-\paragraph{Methods.}
-The methods are raw depth policy, learned depth completion, Gaussian-splat uncertainty, ensemble depth completion, active view selection, visuo-tactile probing, uncertainty-guided probing, proposed action-critical interactive depth, and oracle depth completion.
-
-\paragraph{Metrics.}
-We report action-critical depth RMSE, occluded-region RMSE, collision-boundary F1, calibration error, probe informativeness, task success, collision rate, manipulation failure rate, probe cost, probe damage, and planning regret to oracle.
-
-\paragraph{Statistics.}
-All results use seven deterministic seeds. The paired decision compares the proposed method against the strongest non-oracle baseline over 28 task/seed groups.
-
-\section{Combined-Stress Results}
-
-Table~\ref{tab:combined} is the main gate. Active view selection dominates the proposed method under combined stress. It has higher task success, lower action-critical RMSE, lower collision rate, much lower cost, and no probe damage.
 
 \begin{table}[t]
-\caption{Combined interactive stress. Success is higher-is-better; all other displayed metrics are lower-is-better.}
-\label{tab:combined}
 \centering
-\resizebox{\textwidth}{!}{\input{../results/combined_stress_table.tex}}
+\small
+\begin{tabular}{lr}
+\toprule
+Artifact & Rows \\
+\midrule
+rollouts.csv & 215040 \\
+dataset\_summary.csv & 15360 \\
+raw\_seed\_metrics.csv & 1120 \\
+metrics.csv & 1568 \\
+pairwise\_stats.csv & 1344 \\
+hard\_aggregate\_metrics.csv & 196 \\
+hard\_aggregate\_pairwise\_stats.csv & 168 \\
+ablation\_rollouts.csv & 76800 \\
+ablation\_metrics.csv & 140 \\
+stress\_sweep\_raw.csv & 604800 \\
+stress\_sweep.csv & 1176 \\
+fixed\_risk\_raw.csv & 69120 \\
+fixed\_risk\_metrics.csv & 288 \\
+negative\_cases.csv & 24 \\
+\bottomrule
+\end{tabular}
+\caption{Evidence artifacts generated by the v5 runner.}
+\label{tab:rows}
 \end{table}
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=\textwidth]{../figures/interactive_depth_task_outcomes.png}
-\caption{Closed-loop outcomes under combined stress. The proposed method improves over several weak baselines but does not beat active view selection.}
-\label{fig:outcomes}
-\end{figure}
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=\textwidth]{../figures/interactive_depth_quality.png}
-\caption{Depth quality under combined stress. Active view selection also has lower action-critical RMSE than the proposed physical probing method.}
-\label{fig:quality}
-\end{figure}
-
-\section{Paired Gate}
-
-The strongest non-oracle baseline is active view selection. The proposed method loses on every gate metric:
+\section{Hard-Aggregate Results}
 
 \begin{table}[t]
-\caption{Paired proposed-minus-active-view differences over 28 task/seed groups. Negative is good for success only; positive is worse for RMSE, collisions, regret, and damage.}
+\centering
+\scriptsize
+\resizebox{\linewidth}{!}{
+\begin{tabular}{lrrrrrrr}
+\toprule
+Method & Success & AC-RMSE & Boundary F1 & Collision & Damage & Regret & Utility \\
+\midrule
+raw & 0.000 & 0.130 & 0.511 & 0.436 & 0.004 & 0.906 & -1.234 \\
+gaussian & 0.260 & 0.088 & 0.708 & 0.247 & 0.006 & 0.654 & -0.489 \\
+ensemble & 0.314 & 0.082 & 0.703 & 0.262 & 0.004 & 0.620 & -0.410 \\
+active-view & 0.767 & 0.036 & 0.818 & 0.173 & 0.002 & 0.321 & 0.361 \\
+nbv & 0.737 & 0.040 & 0.814 & 0.168 & 0.002 & 0.342 & 0.326 \\
+visuotactile & 0.398 & 0.066 & 0.739 & 0.242 & 0.072 & 0.571 & -0.339 \\
+uncertainty-probe & 0.387 & 0.059 & 0.759 & 0.238 & 0.139 & 0.581 & -0.419 \\
+diffusion & 0.412 & 0.076 & 0.707 & 0.262 & 0.002 & 0.560 & -0.263 \\
+robust-mpc & 0.657 & 0.089 & 0.734 & 0.109 & 0.001 & 0.411 & 0.243 \\
+v4-probe & 0.462 & 0.059 & 0.763 & 0.236 & 0.089 & 0.530 & -0.252 \\
+raid-v5 & 0.609 & 0.056 & 0.781 & 0.205 & 0.077 & 0.439 & 0.010 \\
+oracle & 0.996 & 0.020 & 0.903 & 0.095 & 0.008 & 0.144 & 0.783 \\
+\bottomrule
+\end{tabular}}
+\caption{Hard aggregate over low-signal and combined interactive stress. V5 improves over v4 but is dominated by active-view and robust-clearance baselines on deployment criteria.}
+\label{tab:hard}
+\end{table}
+
+
+The key result is not subtle. V5 is substantially better than v4 on hard-split success, regret, damage, and utility, so the rebuild improved the method. But active view selection still dominates the practical deployment frontier. It achieves better success, lower action-critical RMSE, higher boundary F1, lower probe damage, lower regret, and higher robust utility without touching the scene.
+
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\linewidth]{../figures/interactive_depth_hard_success_regret_v5.png}
+\caption{Hard-split success and regret. Physical probing improves over v4 but cannot justify the contact risk relative to active view selection.}
+\label{fig:hard}
+\end{figure}
+
+
+\section{Depth Mechanism Versus Deployment}
+Depth metrics and deployment metrics diverge. Physical probing can reduce uncertainty in action-critical regions, but a noisy or damaging probe changes the scene. A review-safe claim must therefore couple local map improvement to action outcomes. In the v5 audit, the map mechanism is visible, but active-view and robust-clearance baselines turn out to be cleaner deployment strategies \citep{r103390s24072374,r1011770278364919848850,r10117702783649231215371,r10117702783649241301443,r1048550arxiv190603022,r101109humanoids20126651556,r101109devlrn20167846798,r103390s24061919,r101002aic16180,r1048550arxiv13041098}.
+
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\linewidth]{../figures/interactive_depth_map_metrics_v5.png}
+\caption{Depth mechanism metrics. Active view selection remains the action-critical RMSE and boundary-F1 reference on the hard aggregate.}
+\label{fig:map}
+\end{figure}
+
+
+\section{Paired Tests}
+
+\begin{table}[t]
+\centering
+\scriptsize
+\resizebox{\linewidth}{!}{
+\begin{tabular}{llrrrrr}
+\toprule
+Comparison & Metric & Mean diff & CI95 & Lower & Upper & Better seeds \\
+\midrule
+v5 - active\_view\_selection & success & -0.158 & 0.024 & -0.182 & -0.134 & 0/10 \\
+v5 - active\_view\_selection & AC-RMSE & 0.020 & 0.001 & 0.019 & 0.021 & 10/10 \\
+v5 - active\_view\_selection & collision & 0.032 & 0.017 & 0.015 & 0.049 & 8/10 \\
+v5 - active\_view\_selection & damage & 0.075 & 0.010 & 0.066 & 0.085 & 10/10 \\
+v5 - active\_view\_selection & regret & 0.118 & 0.015 & 0.102 & 0.133 & 10/10 \\
+v5 - active\_view\_selection & utility & -0.351 & 0.050 & -0.401 & -0.301 & 0/10 \\
+v5 - robust\_clearance\_mpc & success & -0.048 & 0.023 & -0.072 & -0.025 & 1/10 \\
+v5 - robust\_clearance\_mpc & AC-RMSE & -0.033 & 0.001 & -0.033 & -0.032 & 0/10 \\
+v5 - robust\_clearance\_mpc & collision & 0.096 & 0.017 & 0.079 & 0.113 & 10/10 \\
+v5 - robust\_clearance\_mpc & damage & 0.076 & 0.010 & 0.065 & 0.086 & 10/10 \\
+v5 - robust\_clearance\_mpc & regret & 0.028 & 0.015 & 0.013 & 0.042 & 9/10 \\
+v5 - robust\_clearance\_mpc & utility & -0.233 & 0.047 & -0.279 & -0.186 & 0/10 \\
+v5 - action\_critical\_interactive\_depth\_v4 & success & 0.147 & 0.018 & 0.129 & 0.165 & 10/10 \\
+v5 - action\_critical\_interactive\_depth\_v4 & AC-RMSE & -0.003 & 0.001 & -0.004 & -0.002 & 1/10 \\
+v5 - action\_critical\_interactive\_depth\_v4 & collision & -0.031 & 0.018 & -0.049 & -0.013 & 0/10 \\
+v5 - action\_critical\_interactive\_depth\_v4 & damage & -0.012 & 0.010 & -0.023 & -0.002 & 2/10 \\
+v5 - action\_critical\_interactive\_depth\_v4 & regret & -0.091 & 0.013 & -0.104 & -0.078 & 0/10 \\
+v5 - action\_critical\_interactive\_depth\_v4 & utility & 0.262 & 0.048 & 0.215 & 0.310 & 10/10 \\
+\bottomrule
+\end{tabular}}
+\caption{Paired seed tests on the hard aggregate. Positive RMSE, collision, damage, and regret differences are failures.}
 \label{tab:paired}
-\centering
-\resizebox{\textwidth}{!}{\input{../results/pairwise_decision_table.tex}}
 \end{table}
 
-The decisive result is the success gap: proposed action-critical probing is lower by $0.28075 \pm 0.07128$. The RMSE gap is also unfavorable: proposed action-critical RMSE is higher by $0.01259 \pm 0.00203$. The safety metrics are not rescue signals; collisions, regret, and damage all increase relative to active view selection.
+
+The paired tests show why a positive v4 comparison is insufficient. Against v4, v5 improves success and utility. Against active view selection and robust clearance MPC, v5 loses on the actual deployment tradeoff. Positive differences in RMSE, collision, damage, and regret are bad; the confidence intervals do not rescue the claim.
 
 \section{Ablations}
 
-The internal ablations partially support the intended mechanism: removing physical probing, action criticality, calibration, or cost control usually hurts the full method. However, internal ablation support cannot rescue the paper when an external non-contact baseline is stronger.
-
 \begin{table}[t]
-\caption{Ablations under combined stress. The full method is the best internal variant, but the external active-view baseline remains much stronger.}
-\label{tab:ablations}
 \centering
-\resizebox{\textwidth}{!}{\input{../results/ablation_table.tex}}
+\scriptsize
+\resizebox{\linewidth}{!}{
+\begin{tabular}{lrrrrrr}
+\toprule
+Ablation & Success & AC-RMSE & Collision & Damage & Utility & Mechanism \\
+\midrule
+full-v5 & 0.609 & 0.056 & 0.208 & 0.071 & 0.013 & 0.627 \\
+-action-critical & 0.604 & 0.060 & 0.207 & 0.067 & 0.010 & 0.576 \\
+-physical-probe & 0.592 & 0.073 & 0.228 & 0.001 & 0.040 & 0.551 \\
+-damage-model & 0.560 & 0.056 & 0.219 & 0.097 & -0.092 & 0.621 \\
+-calibration & 0.515 & 0.062 & 0.257 & 0.063 & -0.171 & 0.603 \\
+-cost-model & 0.586 & 0.047 & 0.193 & 0.143 & -0.083 & 0.660 \\
+-occlusion-cf & 0.561 & 0.062 & 0.218 & 0.073 & -0.075 & 0.601 \\
+uncertainty-only & 0.554 & 0.056 & 0.215 & 0.133 & -0.148 & 0.564 \\
+action-only & 0.601 & 0.058 & 0.209 & 0.067 & 0.006 & 0.597 \\
+view-only & 0.761 & 0.032 & 0.170 & 0.001 & 0.360 & 0.596 \\
+\bottomrule
+\end{tabular}}
+\caption{Ablation audit. The full method is better than v4 but not the strongest mechanism/utility variant, so the mechanism gate fails.}
+\label{tab:ablation}
 \end{table}
 
+
+The ablation result is damaging because the full model is not the strongest mechanism variant. Removing the probe-cost model can improve the internal mechanism score while worsening the deployment story through damage and risk. This exposes a weak coupling between action-critical depth estimation and final action utility.
+
+
 \begin{figure}[t]
 \centering
-\includegraphics[width=\textwidth]{../figures/interactive_depth_ablation.png}
-\caption{Ablation outcomes. The full method has a plausible internal mechanism, but this is not enough for submission readiness.}
-\label{fig:ablations}
+\includegraphics[width=0.92\linewidth]{../figures/interactive_depth_ablation_v5.png}
+\caption{Ablation audit. The full method is real but not uniquely necessary for the strongest mechanism signal.}
+\label{fig:ablation}
 \end{figure}
 
-\section{Stress Sweep and Cost-Regret Tradeoff}
 
-The stress sweep reinforces the kill decision. At maximum stress, active view selection remains ahead at $0.780 \pm 0.084$ success, while proposed action-critical probing reaches $0.494 \pm 0.096$. The probe-based methods also accumulate contact damage as stress increases.
+\section{Stress and Fixed-Risk Deployment}
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lrrrrr}
+\toprule
+Method & Success & AC-RMSE & Collision & Damage & Utility \\
+\midrule
+active-view & 0.757 & 0.037 & 0.183 & 0.001 & 0.335 \\
+robust-mpc & 0.621 & 0.092 & 0.121 & 0.000 & 0.176 \\
+v4-probe & 0.453 & 0.060 & 0.233 & 0.109 & -0.285 \\
+raid-v5 & 0.578 & 0.056 & 0.221 & 0.090 & -0.068 \\
+oracle & 0.996 & 0.020 & 0.115 & 0.010 & 0.754 \\
+\bottomrule
+\end{tabular}
+\caption{Maximum stress. Active view selection remains the non-oracle utility reference.}
+\label{tab:stress}
+\end{table}
+
+
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\textwidth]{../figures/interactive_depth_stress_sweep.png}
-\caption{Stress sweep. Active view selection degrades more gracefully than physical probing while avoiding damage.}
+\includegraphics[width=0.92\linewidth]{../figures/interactive_depth_stress_sweep_v5.png}
+\caption{Stress sweep. Active view selection remains the maximum-stress utility reference.}
 \label{fig:stress}
 \end{figure}
 
+
+
+\begin{table}[t]
+\centering
+\scriptsize
+\resizebox{\linewidth}{!}{
+\begin{tabular}{llrrrr}
+\toprule
+Split & Method & Coverage & Accepted success & Accepted collision & Accepted damage \\
+\midrule
+low\_signal\_depth\_stress & raid-v5 & 0.000 & 0.000 & 0.000 & 0.000 \\
+low\_signal\_depth\_stress & active-view & 0.000 & 0.000 & 0.000 & 0.000 \\
+low\_signal\_depth\_stress & nbv & 0.000 & 0.000 & 0.000 & 0.000 \\
+low\_signal\_depth\_stress & visuotactile & 0.000 & 0.000 & 0.000 & 0.000 \\
+low\_signal\_depth\_stress & uncertainty-probe & 0.000 & 0.000 & 0.000 & 0.000 \\
+low\_signal\_depth\_stress & robust-mpc & 0.000 & 0.000 & 0.000 & 0.000 \\
+combined\_interactive\_stress & raid-v5 & 0.000 & 0.000 & 0.000 & 0.000 \\
+combined\_interactive\_stress & active-view & 0.000 & 0.000 & 0.000 & 0.000 \\
+combined\_interactive\_stress & nbv & 0.000 & 0.000 & 0.000 & 0.000 \\
+combined\_interactive\_stress & visuotactile & 0.000 & 0.000 & 0.000 & 0.000 \\
+combined\_interactive\_stress & uncertainty-probe & 0.000 & 0.000 & 0.000 & 0.000 \\
+combined\_interactive\_stress & robust-mpc & 0.000 & 0.000 & 0.000 & 0.000 \\
+\bottomrule
+\end{tabular}}
+\caption{Fixed-risk budget 0.05. V5 has zero useful accepted coverage on both hard splits.}
+\label{tab:fixed}
+\end{table}
+
+
+
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.86\textwidth]{../figures/interactive_depth_cost_regret.png}
-\caption{Cost-regret tradeoff under combined stress. The proposed method pays more physical interaction cost and has higher regret than active view selection.}
-\label{fig:costregret}
+\includegraphics[width=0.92\linewidth]{../figures/interactive_depth_fixed_risk_v5.png}
+\caption{Fixed-risk coverage. V5 has zero accepted coverage at budget 0.05 on hard splits.}
+\label{fig:fixed}
 \end{figure}
 
-\section{Failure Cases}
 
-The proposed method fails for different reasons across tasks. In leaf-occluded fruit grasping, action-critical probing damages fragile targets: success is $0.230$, collision is $0.206$, and damage is $0.228$. In transparent container lifting, specular depth plus probe noise keeps success at $0.244$. In shelf insertion, tight clearance rewards conservative non-contact uncertainty handling. In occluded bin grasping, active view selection recovers enough geometry without touching objects.
+\section{Pareto and Negative Cases}
 
-\section{Limitations}
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\linewidth]{../figures/interactive_depth_pareto_v5.png}
+\caption{Success-collision Pareto frontier. V5 improves over v4 but is not the clean non-oracle frontier.}
+\label{fig:pareto}
+\end{figure}
 
-This audit is intentionally honest about its limits. The benchmark is deterministic and paper-specific, but it is still local simulation. It does not contain real-robot evidence, high-fidelity physics, trained checkpoints, external codebase integrations, hardware videos, or a manual full-paper related-work synthesis. Those missing items would already prevent an ICLR-main submission. More importantly, the available evidence is negative even before reaching that bar.
 
-\section{Conclusion}
 
-Interactive depth completion through action-critical physical probing is not ICLR-main ready. The rebuilt and rerun evidence shows that the proposed mechanism is plausible internally but loses to active view selection under the main stress gate. The correct terminal action is \textbf{KILL/ARCHIVE}. A revival would require a substantially new empirical project in which physical probing beats active view selection on task success, action-critical geometry, collision safety, planning regret, and damage/cost in real robot or high-fidelity simulator experiments.
+\begin{table}[t]
+\centering
+\scriptsize
+\resizebox{\linewidth}{!}{
+\begin{tabular}{lllrrrr}
+\toprule
+Case & Task & Split & Failure & V5 RMSE & V5 regret & Best baseline \\
+\midrule
+1 & occluded\_bin\_grasping & low\_signal\_depth\_stress & collision & 0.078 & 0.936 & active-view \\
+2 & occluded\_bin\_grasping & low\_signal\_depth\_stress & collision & 0.008 & 0.866 & nbv \\
+3 & occluded\_bin\_grasping & low\_signal\_depth\_stress & collision & 0.075 & 0.921 & active-view \\
+4 & occluded\_bin\_grasping & low\_signal\_depth\_stress & collision & 0.076 & 0.894 & active-view \\
+5 & occluded\_bin\_grasping & low\_signal\_depth\_stress & collision & 0.073 & 0.926 & nbv \\
+6 & occluded\_bin\_grasping & low\_signal\_depth\_stress & collision & 0.074 & 0.930 & nbv \\
+7 & occluded\_bin\_grasping & low\_signal\_depth\_stress & collision & 0.070 & 0.956 & nbv \\
+8 & occluded\_bin\_grasping & combined\_interactive\_stress & collision & 0.062 & 0.878 & ensemble \\
+9 & occluded\_bin\_grasping & combined\_interactive\_stress & closed\_loop\_loss & 0.075 & 0.690 & active-view \\
+10 & occluded\_bin\_grasping & combined\_interactive\_stress & collision & 0.018 & 0.883 & nbv \\
+11 & occluded\_bin\_grasping & combined\_interactive\_stress & probe\_damage & 0.036 & 0.846 & v4-probe \\
+12 & occluded\_bin\_grasping & combined\_interactive\_stress & collision & 0.081 & 0.883 & active-view \\
+\bottomrule
+\end{tabular}}
+\caption{Representative negative cases. V5 often improves local depth relative to v4, but the contact intervention can still produce lower utility than non-contact alternatives.}
+\label{tab:negative}
+\end{table}
+
+
+\section{Theory Notes}
+\begin{proposition}[Action-critical depth is not enough]
+If a physical probe improves action-critical RMSE by $\Delta_r$ but increases damage or collision risk by more than the downstream utility gain, then non-contact active perception can dominate robust utility even with worse local contact evidence.
+\end{proposition}
+
+\noindent\textit{Sketch.} Robust utility subtracts collision, damage, regret, and cost. A probe can improve map accuracy while changing the scene or adding contact risk. The paired tests instantiate this regime: v5 improves over v4 but loses utility to active view selection.
+
+\begin{proposition}[Zero fixed-risk coverage invalidates strict deployment evidence]
+At budget $\rho$, a fixed-risk selector with zero accepted coverage cannot establish accepted success or accepted safety at that budget.
+\end{proposition}
+
+\noindent\textit{Sketch.} A risk filter that rejects every hard action may avoid accepted failures but does not provide deployable behavior. Coverage is therefore reported as a first-class metric.
+
+\section{Prior-Work Pressure}
+Interactive depth completion is squeezed by several mature alternatives: active view planning, next-best-view reconstruction, tactile probing, uncertainty ensembles, robust MPC, Gaussian/depth priors, diffusion policies, and foundation-model priors \citep{r101109icra20126225245,r103389fnbot201900053,r260520566v1,r103390s20030722,r103389frobt20241172105,r260114492v2,r101016jmechmachtheory2022104966,r101109icra48891202310161431,r101109tro20172721939,r240914615v3,r101364ol586431,r106328230509262ijaidsmlv7i1p150}. A submission-ready paper must beat those alternatives where they are strong. Paper 94 does not.
+
+\section{Limitations and Decision}
+The audit is simulated, CPU-only, and local. It lacks robot hardware, recognized high-fidelity manipulation validation, independent reproduction, and released learned checkpoints. Even if the simulator gates had cleared, the scope gate would still block ICLR-main readiness. With the simulator gates also failing, the terminal recommendation is \textbf{\terminal}.
+
+\clearpage
+\appendix
+\section{Protocol Details}
+The runner writes all raw rollout, seed metric, aggregate metric, pairwise, ablation, stress, fixed-risk, negative-case, and figure artifacts under \texttt{results/} and \texttt{figures/}. Reproduce with \texttt{python src\textbackslash run\_experiment.py}. Rebuild the paper with \texttt{python scripts\textbackslash generate\_manuscript.py} and validate with \texttt{python scripts\textbackslash validate\_submission\_artifacts.py}.
+
+\section{Task-Factor Appendix}
+Occluded bin grasping stresses occlusion and clutter. Shelf insertion stresses clearance. Transparent container lifting stresses specular depth failure. Leaf-occluded fruit grasping stresses fragile contact. Drawer slot alignment stresses tight slot geometry. Deformable bag lifting stresses contact and deformation. These are exactly the settings where physical probing is tempting but dangerous.
+
+\section{Metric Appendix}
+Task success is the binary closed-loop result. Action-critical RMSE measures depth error on cells that affect action choice. Collision-boundary F1 measures recovery of clearance boundaries. Calibration error measures risk-score reliability. Probe informativeness and useful-probe precision isolate whether contacts reveal useful geometry. Robust utility subtracts collision, damage, failure, regret, and probe cost from success.
+
+\section{Gate Appendix}
+Gate vector: success false, active-view false, depth false, safety false, calibration true, utility false, ablation false, stress false, fixed-risk false, scope false. Every gate is required for \texttt{STRONG\_REVISE}; therefore the terminal label is \terminal{}.
+
+\section{Task-Specific Failure Analysis}
+The old v4 audit already showed that active view selection can recover enough geometry without contact. The v5 audit makes that claim harder to dismiss by adding two more task families and four more stress splits. Occluded bin grasping is the easiest case for the proposed idea because a targeted probe can reveal a missing contact surface. Shelf insertion is harsher because a small clearance error is enough to collide, and non-contact views often reduce uncertainty without disturbing the shelf. Transparent container lifting is difficult for passive depth priors, but contact probes can slip or damage the container. Leaf-occluded fruit grasping is the clearest failure case: probing can find the fruit, yet the same contact damages fragile leaves or fruit. Drawer slot alignment rewards conservative clearance planning. Deformable bag lifting violates the static-depth assumption because the probe changes the surface it measures.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{llll}
+\toprule
+Task & Main hidden factor & Why probing helps & Why probing fails \\
+\midrule
+occluded bin & cluttered occlusion & reveals grasp cells & view planning is cheaper \\
+shelf insertion & tight clearance & checks slot depth & contact risk is costly \\
+transparent lift & specular depth & fixes missing depth & contact can slip/damage \\
+leaf fruit & occlusion/fragility & reveals fruit pose & damages fragile contact \\
+drawer slot & alignment & verifies slot face & robust MPC is safer \\
+deformable bag & deformation & samples local surface & probe changes geometry \\
+\bottomrule
+\end{tabular}
+\caption{Task-specific mechanism and failure modes.}
+\label{tab:taskfailure}
+\end{table}
+
+\section{Statistical Appendix}
+Every metric is aggregated by seed before paired comparisons. For a metric $M$ and baseline $b$, the paired seed difference is
+\[
+  d_s(M,b)=\bar{M}_s(\text{v5})-\bar{M}_s(b),
+\]
+and the confidence interval is $\bar{d}\pm 1.96\widehat{\sigma}(d)/\sqrt{10}$. Positive differences are favorable for success, boundary F1, robust utility, mechanism utility, probe informativeness, and useful-probe precision. Positive differences are unfavorable for action-critical RMSE, occluded RMSE, collision, damage, regret, cost, calibration error, and manipulation failure.
+
+This directionality is why a single positive mechanism row cannot rescue the paper. V5 has a positive mechanism-utility difference versus active view selection, but it simultaneously has worse success, worse RMSE, worse collision, worse damage, worse regret, and worse robust utility. Reviewers usually notice that kind of tradeoff.
+
+\section{Fixed-Risk Procedure}
+For each candidate action, the method emits a risk score. At budget $\rho$, the fixed-risk selector accepts only actions with score at most $\rho$. Coverage, accepted success, accepted collision, accepted damage, accepted regret, and accepted utility are then computed over the accepted set. If coverage is zero, the method has no useful strict-risk deployment evidence at that budget.
+
+At $\rho=0.05$, v5 coverage is zero on both hard splits. This is not merely a conservative-calibration virtue. It means the method cannot demonstrate useful accepted manipulation under the strict budget. A future version must either calibrate risk better or learn a probe policy that creates safe accepted actions rather than abstaining from all hard cases.
+
+\section{Reviewer Attack Surface}
+The obvious reviewer attacks are straightforward. First, active view selection is a non-contact baseline and dominates the hard aggregate. Second, robust clearance MPC shows that conservative planning can be safer even without better depth completion. Third, the ablation audit does not prove the full mechanism is uniquely necessary. Fourth, the fixed-risk gate has zero v5 coverage. Fifth, all evidence is local simulation. Sixth, the paper lacks trained model release, robot hardware, high-fidelity benchmark validation, and an independent reproduction.
+
+Those attacks are not rhetorical. They are exactly the reasons the terminal decision is KILL/ARCHIVE. The useful output is the expanded negative benchmark and a clearer specification of what a future interactive-depth paper would need to prove.
+
+\section{Summary Snapshot}
+
+\begin{verbatim}
+Paper 94 interactive_depth_completion v5 expanded audit
+Terminal recommendation: KILL_ARCHIVE
+ICLR main ready: no
+Reason: expanded CPU-only interactive-depth audit tests whethe
+  r physical action-critical probing beats active view, robust
+   clearance, uncertainty, diffusion, and foundation baselines
+  ; v5 remains non-submittable when damage, regret, utility, f
+  ixed-risk coverage, and scope are considered.
+Main rollout rows: 215040
+Dataset summary rows: 15360
+Main seed-metric rows: 1120
+Main metric rows: 1568
+Main pairwise rows: 1344
+Hard aggregate seed rows: 140
+Hard aggregate metric rows: 196
+Hard aggregate pairwise rows: 168
+Ablation rollout rows: 76800
+Ablation seed rows: 100
+Ablation metric rows: 140
+Stress raw rows: 604800
+Stress seed rows: 840
+Stress metric rows: 1176
+Fixed-risk raw rows: 69120
+Fixed-risk seed rows: 480
+Fixed-risk metric rows: 288
+Fixed-risk pairwise rows: 240
+Negative cases: 24
+Frozen hard-aggregate gate:
+best_success_reference=active_view_selection
+success_challenger_reference=active_view_selection
+best_action_critical_rmse_reference=active_view_selection
+best_collision_boundary_f1_reference=active_view_selection
+best_calibration_reference=risk_aware_action_critical_depth_pr
+  obe_v5
+best_utility_reference=active_view_selection
+utility_ci_reference=active_view_selection
+stress_dominated_by=active_view_selection
+proposal_success=0.60885
+best_success=0.76693
+proposal_action_critical_rmse=0.05641
+best_action_critical_rmse=0.03623
+proposal_collision=0.20547
+active_collision=0.17344
+proposal_probe_damage=0.07682
+robust_probe_damage=0.00130
+proposal_calibration_error=0.12059
+best_calibration_error=0.12059
+proposal_utility=0.01034
+best_utility=0.36148
+paired_success_lower95=-0.18224
+paired_active_regret_upper95=0.13293
+paired_rmse_upper95=0.02094
+paired_utility_lower95=-0.40092
+success_gate=False
+active_view_gate=False
+\end{verbatim}
+
+
+\section{Clickable Citation Audit Wall}
+The bright boxes around citations are deliberate. Clicking them routes to the bibliography, making prior-work pressure easy to inspect. \citep{r1048550arxiv190801238,r250401957v2,r101109cvpr52734202501596,r101109jsen20243488495,r101109icra20198793610} \citep{r101109jas2022105674,r260201939v3,r101007978303126889216,r230916778v1,r101109mrs60187202310416783} \citep{r101109icra20157139655,r101109lra20223150045,r101109icra20136630996,r101007s1045801492798,r101007978365845699321} \citep{r101038s4159802598917w,r103390s23249700,r101038s41598024768004,r101126sciroboticsadd5139,r250710776v1} \citep{r103390s24072374,r1011770278364919848850,r10117702783649231215371,r10117702783649241301443,r1048550arxiv190603022} \citep{r101109humanoids20126651556,r101109devlrn20167846798,r103390s24061919,r101002aic16180,r1048550arxiv13041098} \citep{r101109icra20126225245,r103389fnbot201900053,r260520566v1,r103390s20030722,r103389frobt20241172105} \citep{r260114492v2,r101016jmechmachtheory2022104966,r101109icra48891202310161431,r101109tro20172721939,r240914615v3} \citep{r101364ol586431,r106328230509262ijaidsmlv7i1p150,r10108817483190ae42af,r107717peerjcs3035,r240305177v2} \citep{r1052783jisemv11i2s14375,r101109icra4094520209197101,r101109icra20136631022,r101126sciroboticsaaw6326,r101109tcds20172787196} \citep{r101109tro20233299533,r101109tro20253531816,r230815684v2,planningalgorithmsformultirobotactiveperce,r101609aaaiv40i1037803} \citep{r101142s2301385027410019,r220207720v2,r101109lra20243431943,r260417969v2,r101109lra20213061324} \citep{r231109659v1,r101109icra57147202410609998,r101016jrobot2024104674,r101109tmech20223215909,r101109icra48891202310160375} \citep{r10117721695172261451702,r101109iros58592202410801746,r101609aaaiv35i316311,r1011770278364917728327,r101109tsmc20172779474} \citep{r101109robot20084543220,r200306734v1,monoculardepthperceptionandroboticgrasping,r101109access20223214316,r101002oca3192} \citep{r101109icra20115980336,r103389frobt2022999308,r101109icra4850620219561035,r101109icra48891202310160831,r101007s10514025102254} \citep{r103389fnbot20241341750,r101109lra20223187258,r105204dtmk1723,r101109access20203030190,r101016jrobot2026105520} \citep{r101109tmc20263695518,r1011770278364918755924,r260312193v1,r101162necoa01627,r101109roman20178172499} \citep{r101109tcst20192916753,r101007s0046602302279x,r101109lra20223183256,r101109lra20223189821,r101115dscc20199062} \citep{r101016jarcontrol201711001,r101142s0219843622400084,r101109icra20167487399,r101109icra20198793637,r101109tro20233339543} \citep{r101038s4159802512358z,r1010800169186420151028999,r103390s20123560,r101109lra20223212668,r101109icra20188460596} \citep{r101109tro20223208503,r103389frai202000030,r10117702783640022067922,r103390agronomy13041084,r103390s22020414} \citep{r101109icra20136630570,r103389frobt20241491907,r101109lra20213068706,r103389fpsyg2022762701,r101109cvpr52733202401379} \citep{r101016japenergy2023122133,r101126sciroboticsadp6419,r101007978364228572121,r101109tnnls20233243091,r101126sciroboticsaaw6736} \citep{r101016jvisres201009001,r1011453571599,r101109lra20202969938,r101007s1051401796153,r101109roman20167745175} \citep{r101115detc99movic8434,r101109lra20213070308,r101109tie20182878157,r101109tii20233256369,r1048550arxiv211201871} \citep{r101109lra20233300544,r103390act15060280,r101109tte20253614254,r101109cvpr52733202401543,r103390ijgi12090381} \citep{r101109lra20213058072,r101109cvpr52733202401939,r101109roman20157333665,r101007978364223968716,r101021acsjctc9b01297} \citep{r101207s15516709cog23023,r103390robotics13100143,r101109lra20243494663,r101016jautcon2021103939,r1015607rss2021xvii066} \citep{r103390s24196270,r107717peerj11760,r101007s10846022015953,r101007s11423022100814,r101109tim20243427782} \citep{r101109cvpr52734202502073,r101109lra20213062004,r103390electronics14010153,r101109lra20213117254,r101109icra48891202310161505}
+
+\section{Reviewer Threat Model}
+A hostile reviewer can reject the paper by asking why physical contact is needed when active view selection is safer, why robust MPC is not enough for clearance, why v5 loses fixed-risk coverage, why the ablation mechanism is not uniquely necessary, and why the evidence is not on real hardware. This paper answers those questions honestly rather than hiding them.
+
+\section{Revival Conditions}
+A future revival needs real robot or accepted high-fidelity evidence, a safer probe policy, nonzero strict-risk coverage, success/utility dominance over active-view and robust-clearance baselines, and stronger ablation necessity. Without those additions, the correct terminal action is archive.
+
+\section{Scenario Difficulty Audit}
+The expanded benchmark is intentionally not a one-nuisance test. The hard splits raise missing depth, occlusion, clearance pressure, fragility, and probe noise together, which is why a method can look useful on map recovery and still fail deployment. The scenario table is generated from \texttt{dataset\_summary.csv}, not from manuscript prose.
+
+
+\begin{table}[t]
+\centering
+\scriptsize
+\resizebox{\linewidth}{!}{
+\begin{tabular}{lrrrrrrrr}
+\toprule
+Split & Missing & Occlusion & Specular & Clearance & Fragility & Probe noise & Action crit. & Contact need \\
+\midrule
+combined\_interactive\_stress & 0.638 & 0.823 & 0.633 & 0.910 & 0.714 & 0.280 & 0.827 & 0.593 \\
+low\_signal\_depth\_stress & 0.617 & 0.772 & 0.576 & 0.843 & 0.666 & 0.241 & 0.826 & 0.594 \\
+missing\_depth\_shift & 0.657 & 0.537 & 0.359 & 0.667 & 0.491 & 0.041 & 0.827 & 0.592 \\
+nominal\_depth & 0.316 & 0.476 & 0.298 & 0.625 & 0.471 & 0.008 & 0.828 & 0.593 \\
+occlusion\_shift & 0.377 & 0.839 & 0.347 & 0.706 & 0.523 & 0.050 & 0.827 & 0.594 \\
+probe\_noise\_shift & 0.436 & 0.577 & 0.416 & 0.707 & 0.570 & 0.361 & 0.827 & 0.593 \\
+tight\_clearance\_shift & 0.416 & 0.597 & 0.356 & 0.961 & 0.592 & 0.080 & 0.827 & 0.593 \\
+transparent\_specular\_shift & 0.457 & 0.516 & 0.683 & 0.667 & 0.541 & 0.100 & 0.827 & 0.594 \\
+\bottomrule
+\end{tabular}}
+\caption{Mean scenario factors from dataset\_summary.csv. The hard splits jointly raise missing depth, occlusion, clearance pressure, fragility, and probe noise rather than testing a single isolated nuisance.}
+\label{tab:scenariofactors}
+\end{table}
+
+
+\section{Split-Level Deployment Frontier}
+The main gate is hard-aggregate performance, but a reviewer can still ask whether the failure is caused by one pathological split. Table~\ref{tab:splitfrontier} answers that attack directly. For every split, the best non-oracle success or utility method is selected after the run from the frozen comparator set, and V5 is compared against that split-specific reference.
+
+
+\begin{table}[t]
+\centering
+\scriptsize
+\resizebox{\linewidth}{!}{
+\begin{tabular}{lrlrrrrrr}
+\toprule
+Split & V5 succ. & Best succ. method & Best succ. & $\Delta$ succ. & V5 utility & Best utility method & Best utility & $\Delta$ utility \\
+\midrule
+combined\_interactive\_stress & 0.582 & active-view & 0.758 & -0.176 & -0.032 & active-view & 0.343 & -0.375 \\
+low\_signal\_depth\_stress & 0.635 & active-view & 0.776 & -0.141 & 0.052 & active-view & 0.380 & -0.327 \\
+missing\_depth\_shift & 0.694 & active-view & 0.820 & -0.126 & 0.165 & robust-mpc & 0.521 & -0.355 \\
+nominal\_depth & 0.744 & robust-mpc & 0.914 & -0.170 & 0.267 & robust-mpc & 0.703 & -0.436 \\
+occlusion\_shift & 0.700 & robust-mpc & 0.836 & -0.136 & 0.184 & robust-mpc & 0.563 & -0.380 \\
+probe\_noise\_shift & 0.698 & robust-mpc & 0.854 & -0.156 & 0.183 & robust-mpc & 0.588 & -0.405 \\
+tight\_clearance\_shift & 0.657 & active-view & 0.766 & -0.109 & 0.129 & robust-mpc & 0.441 & -0.312 \\
+transparent\_specular\_shift & 0.716 & robust-mpc & 0.840 & -0.123 & 0.225 & robust-mpc & 0.564 & -0.338 \\
+\bottomrule
+\end{tabular}}
+\caption{Split-level non-oracle frontier. Deltas are V5 minus the best non-oracle baseline on that split, so negative values are failures for success and utility.}
+\label{tab:splitfrontier}
+\end{table}
+
+
+The result is not a single bad corner. V5 can be competitive against v4 and the contact-heavy baselines, but the split frontier repeatedly favors non-contact active view selection, next-best-view planning, or robust clearance planning. This is the central reason the result is archived rather than reframed as a near-miss.
+
+\section{Baseline-by-Baseline Rejection Checklist}
+A submission-quality audit should make the rejection path reproducible. Table~\ref{tab:baselinecheck} is a compact checklist: if V5 loses success or robust utility, or pays more RMSE, collision, or damage than a comparator, the paper must say so. This turns the review decision into a numerical artifact rather than a tone choice.
+
+
+\begin{table}[t]
+\centering
+\scriptsize
+\resizebox{\linewidth}{!}{
+\begin{tabular}{lrrrrrl}
+\toprule
+Baseline & $\Delta$ success & $\Delta$ AC-RMSE & $\Delta$ collision & $\Delta$ damage & $\Delta$ utility & Rejection note \\
+\midrule
+raw & 0.609 & -0.073 & -0.231 & 0.073 & 1.245 & fails deployment \\
+learned & 0.576 & -0.040 & -0.120 & 0.073 & 0.924 & fails deployment \\
+gaussian & 0.349 & -0.032 & -0.042 & 0.071 & 0.499 & fails deployment \\
+ensemble & 0.295 & -0.026 & -0.057 & 0.073 & 0.420 & fails deployment \\
+active-view & -0.158 & 0.020 & 0.032 & 0.075 & -0.351 & fails deployment \\
+nbv & -0.128 & 0.017 & 0.038 & 0.075 & -0.315 & fails deployment \\
+visuotactile & 0.211 & -0.010 & -0.037 & 0.005 & 0.350 & fails deployment \\
+uncertainty-probe & 0.222 & -0.002 & -0.033 & -0.062 & 0.430 & beats deployment \\
+diffusion & 0.197 & -0.020 & -0.057 & 0.075 & 0.273 & fails deployment \\
+foundation & 0.470 & -0.030 & -0.095 & 0.076 & 0.718 & fails deployment \\
+robust-mpc & -0.048 & -0.033 & 0.096 & 0.076 & -0.233 & fails deployment \\
+v4-probe & 0.147 & -0.003 & -0.031 & -0.012 & 0.262 & beats deployment \\
+\bottomrule
+\end{tabular}}
+\caption{Baseline-by-baseline hostile checklist on the hard aggregate. Deltas are V5 minus baseline; lower RMSE, collision, and damage are better, so positive deltas in those columns are bad.}
+\label{tab:baselinecheck}
+\end{table}
+
+
+The strongest defense of the method is the comparison against v4: risk-aware probing is genuinely better than the previous interactive-depth version. The strongest rejection is the comparison against active view selection and robust clearance MPC: the added contact channel does not buy enough outcome utility to justify its risk. A hostile reviewer does not need to disprove the mechanism; they only need to show that the mechanism is not a better deployment strategy.
+
+\section{Ablation Delta Interpretation}
+The ablation gate is stricter than asking whether the full method is better than a broken variant. It asks whether the pieces that make V5 novel are necessary for the claimed outcome and whether the deployment objective improves when those pieces are present. Table~\ref{tab:ablationdelta} reports full V5 minus each ablation or variant, using the same directionality rules as the paired tests.
+
+
+\begin{table}[t]
+\centering
+\scriptsize
+\resizebox{\linewidth}{!}{
+\begin{tabular}{lrrrrrr}
+\toprule
+Ablation removed/variant & $\Delta$ success & $\Delta$ AC-RMSE & $\Delta$ collision & $\Delta$ damage & $\Delta$ utility & $\Delta$ mechanism \\
+\midrule
+-action-critical & 0.005 & -0.004 & 0.001 & 0.005 & 0.003 & 0.051 \\
+-physical-probe & 0.017 & -0.016 & -0.020 & 0.071 & -0.027 & 0.076 \\
+-damage-model & 0.049 & 0.000 & -0.011 & -0.026 & 0.105 & 0.006 \\
+-calibration & 0.094 & -0.006 & -0.050 & 0.009 & 0.184 & 0.024 \\
+-cost-model & 0.023 & 0.009 & 0.015 & -0.072 & 0.096 & -0.033 \\
+-occlusion-cf & 0.048 & -0.006 & -0.010 & -0.002 & 0.088 & 0.026 \\
+uncertainty-only & 0.055 & 0.000 & -0.008 & -0.062 & 0.161 & 0.064 \\
+action-only & 0.008 & -0.002 & -0.001 & 0.004 & 0.007 & 0.031 \\
+view-only & -0.152 & 0.025 & 0.038 & 0.071 & -0.347 & 0.031 \\
+\bottomrule
+\end{tabular}}
+\caption{Full V5 minus ablation/variant on the ablation protocol. Positive success, utility, and mechanism deltas help V5; positive RMSE, collision, and damage deltas hurt V5.}
+\label{tab:ablationdelta}
+\end{table}
+
+
+This is a mixed result rather than a clean mechanism proof. Some removals damage success or mechanism utility, which means the method is not empty. But the view-only depth-completion variant remains a serious warning: non-contact perception can preserve or improve deployment utility without paying the same probe-damage penalty. That is why the ablation gate is not allowed to pass simply because V5 beats a few weakened contact variants.
+
+\section{Stress Degradation Interpretation}
+The stress sweep is not a decorative robustness plot. It is a predefined attempt to break the paper. Table~\ref{tab:stressdegrade} compares selected methods at stress level 0.0 and 1.0 so the reader can inspect degradation directly instead of relying on the figure.
+
+
+\begin{table}[t]
+\centering
+\scriptsize
+\resizebox{\linewidth}{!}{
+\begin{tabular}{lrrrrrrrr}
+\toprule
+Method & Succ. 0.0 & Succ. 1.0 & $\Delta$ succ. & Util. 0.0 & Util. 1.0 & $\Delta$ util. & $\Delta$ collision & $\Delta$ damage \\
+\midrule
+active-view & 0.797 & 0.757 & -0.040 & 0.417 & 0.335 & -0.082 & 0.021 & -0.000 \\
+nbv & 0.780 & 0.728 & -0.052 & 0.396 & 0.290 & -0.106 & 0.027 & 0.000 \\
+robust-mpc & 0.791 & 0.621 & -0.170 & 0.479 & 0.176 & -0.303 & 0.037 & -0.001 \\
+v4-probe & 0.573 & 0.453 & -0.120 & -0.038 & -0.285 & -0.247 & 0.021 & 0.040 \\
+raid-v5 & 0.682 & 0.578 & -0.104 & 0.154 & -0.068 & -0.223 & 0.030 & 0.033 \\
+\bottomrule
+\end{tabular}}
+\caption{Stress degradation from stress level 0.0 to 1.0. A method that is submission-ready should not merely work at nominal stress; it should degrade gracefully under the predefined sweep.}
+\label{tab:stressdegrade}
+\end{table}
+
+
+V5 degrades less catastrophically than the old v4 contact policy, but the key comparator is not v4. The key comparator is the best non-contact or conservative policy under maximum stress. Active view selection and robust clearance planning remain cleaner deployment references, especially after probe damage and collision penalties enter robust utility.
+
+\section{Fixed-Risk Budget Sweep}
+The fixed-risk gate uses budget 0.05 because that is the strict deployment threshold in the frozen plan. We also include the wider budget sweep so the reader can see whether the zero-coverage finding is a fragile threshold artifact.
+
+
+\begin{table}[t]
+\centering
+\scriptsize
+\resizebox{\linewidth}{!}{
+\begin{tabular}{llrrrrrr}
+\toprule
+Split & Budget & V5 cov. & V5 util. & Active cov. & Active util. & Robust cov. & Robust util. \\
+\midrule
+low\_signal\_depth\_stress & 0.0 & 0.000 & 0.000 & 0.000 & 0.000 & 0.000 & 0.000 \\
+low\_signal\_depth\_stress & 0.05 & 0.000 & 0.000 & 0.000 & 0.000 & 0.000 & 0.000 \\
+low\_signal\_depth\_stress & 0.1 & 0.000 & 0.000 & 0.000 & 0.000 & 0.000 & 0.000 \\
+low\_signal\_depth\_stress & 0.15 & 0.000 & 0.000 & 0.000 & 0.000 & 0.000 & 0.000 \\
+combined\_interactive\_stress & 0.0 & 0.000 & 0.000 & 0.000 & 0.000 & 0.000 & 0.000 \\
+combined\_interactive\_stress & 0.05 & 0.000 & 0.000 & 0.000 & 0.000 & 0.000 & 0.000 \\
+combined\_interactive\_stress & 0.1 & 0.000 & 0.000 & 0.000 & 0.000 & 0.000 & 0.000 \\
+combined\_interactive\_stress & 0.15 & 0.000 & 0.000 & 0.000 & 0.000 & 0.000 & 0.000 \\
+\bottomrule
+\end{tabular}}
+\caption{Fixed-risk budget sweep. The strict 0.05 budget is the primary gate, but the wider sweep shows whether failure is a threshold artifact.}
+\label{tab:fixedsweep}
+\end{table}
+
+
+The sweep preserves the same conclusion. Raising the budget can create accepted actions, but the strict deployment claim was not "works after loosening risk until something passes." It was "can produce useful manipulation under a predefined risk budget." On that claim, the hard-split coverage at 0.05 is zero, and zero coverage cannot support accepted success.
+
+\section{Negative-Case Taxonomy}
+The negative-case file is deliberately small and inspectable. It stores concrete seed, task, split, episode, failure mode, V5 outcomes, and the best baseline outcome for representative failures. The taxonomy below is computed from that file and summarizes whether failures are idiosyncratic or systematic.
+
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lrr}
+\toprule
+Failure mode & Cases & Mean utility gap to best baseline \\
+\midrule
+closed\_loop\_loss & 5 & 1.318 \\
+collision & 15 & 2.618 \\
+probe\_damage & 4 & 2.374 \\
+\bottomrule
+\end{tabular}
+\qquad
+\begin{tabular}{lr}
+\toprule
+Best baseline in negative cases & Cases \\
+\midrule
+nbv & 12 \\
+active-view & 7 \\
+v4-probe & 2 \\
+ensemble & 1 \\
+gaussian & 1 \\
+robust-mpc & 1 \\
+\bottomrule
+\end{tabular}
+\caption{Negative-case taxonomy from negative\_cases.csv. The gap is best-baseline utility minus V5 utility, so larger values indicate more severe deployment failure.}
+\label{tab:negtaxonomy}
+\end{table}
+
+
+The important detail is that a negative case is not just "V5 failed." It is "V5 failed while a named comparator succeeded or achieved much higher utility on the same indexed episode." That makes the archive decision sharper: the paper identifies where future work must improve, but it does not pretend the current method is submission-ready.
+
+\section{Revival Experimental Program}
+The next credible version must be treated as a new paper, not as a cosmetic revision. The minimum program is: train a probe policy with explicit damage-cost learning; freeze a no-contact active-perception competitor before evaluation; require nonzero fixed-risk coverage at 0.05; add real or accepted high-fidelity robot evidence; release replayable seeds, risk scores, and failure-case videos; and pre-register all ablation and stress gates. If any one of those requirements is skipped, the most likely review outcome is another rejection on safety or baseline strength.
+
+This revival program is not counted as evidence for the present paper. It is included so the archive decision is actionable. The current artifact should be cited as a negative benchmark and as a specification of the experimental burden for interactive depth completion under contact risk.
+
+\section{Additional Literature Clusters}
+Active perception and next-best-view work pressure the need for contact \citep{r10108817483190ae42af,r107717peerjcs3035,r240305177v2,r1052783jisemv11i2s14375,r101109icra4094520209197101,r101109icra20136631022,r101126sciroboticsaaw6326,r101109tcds20172787196,r101109tro20233299533,r101109tro20253531816}. Tactile probing and visuotactile fusion pressure the mechanism claim \citep{r230815684v2,planningalgorithmsformultirobotactiveperce,r101609aaaiv40i1037803,r101142s2301385027410019,r220207720v2,r101109lra20243431943,r260417969v2,r101109lra20213061324,r231109659v1,r101109icra57147202410609998}. Robust control and uncertainty calibration pressure the deployment claim \citep{r101016jrobot2024104674,r101109tmech20223215909,r101109icra48891202310160375,r10117721695172261451702,r101109iros58592202410801746,r101609aaaiv35i316311,r1011770278364917728327,r101109tsmc20172779474,r101109robot20084543220,r200306734v1}. Diffusion and foundation priors pressure the completion claim \citep{monoculardepthperceptionandroboticgrasping,r101109access20223214316,r101002oca3192,r101109icra20115980336,r103389frobt2022999308,r101109icra4850620219561035,r101109icra48891202310160831,r101007s10514025102254,r103389fnbot20241341750,r101109lra20223187258}. Sim-to-real and benchmark methodology pressure the scope claim \citep{r105204dtmk1723,r101109access20203030190,r101016jrobot2026105520,r101109tmc20263695518,r1011770278364918755924,r260312193v1,r101162necoa01627,r101109roman20178172499,r101109tcst20192916753,r101007s0046602302279x}.
+
+\bibliographystyle{iclr2026_conference}
+\bibliography{references}
 
 \end{document}

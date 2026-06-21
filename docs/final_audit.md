@@ -2,16 +2,18 @@
 
 1. Chosen thesis: Interactive Depth Completion tests whether a robot should physically probe depth regions where perception uncertainty matters to action.
 2. ICLR-main decision: KILL_ARCHIVE.
-3. Submission-hardening version: v4.1 rerun audit.
-4. Last update: 2026-06-15 13:07:23 +0100.
-5. Evidence: deterministic local active-perception manipulation benchmark with seven seeds, four tasks, five splits, nine methods, ablations, stress sweeps, paired confidence intervals, and failure cases.
-6. Strongest non-oracle baseline: active_view_selection.
-7. Combined-stress evidence: active view selection reaches 0.795 +/- 0.080 task success; the proposed method reaches 0.514 +/- 0.106.
-8. Paired task/seed result: proposed minus active view selection is -0.28075 +/- 0.07128 for success, +0.01259 +/- 0.00203 for action-critical RMSE, +0.07540 +/- 0.02471 for collisions, +0.17412 +/- 0.02408 for regret, and +0.15278 +/- 0.02223 for probe damage.
-9. Main failure mode: physical probing improves some local geometry but introduces contact cost and damage; active view selection recovers enough occluded geometry without contact.
-10. Closest hostile prior work: see `docs/hostile_prior_work.md`, `docs/hostile_prior_work_100_cards.csv`, and `docs/hostile_reviewer_response.md`.
-11. Reproducibility: `python src/run_experiment.py` regenerates the CSVs, figures, LaTeX tables, and terminal decision; the 2026-06-15 rerun completed successfully.
-12. Claim-validity status: ICLR-main claim killed; archive retained as a negative evidence report.
-13. Exact Downloads PDF path: `C:/Users/wangz/Downloads/94.pdf`.
-14. GitHub URL: https://github.com/Jason-Wang313/94_interactive_depth_completion.
-15. Confirmation: no visible Desktop PDF copy was requested or made.
+3. Submission-hardening version: v5 expanded audit.
+4. Last update: 2026-06-22 06:06 Asia/Shanghai.
+5. Evidence: deterministic local active-perception manipulation benchmark with 10 seeds, 6 tasks, 8 splits, 14 methods, 215,040 main rollout rows, 76,800 ablation rollout rows, 604,800 stress rows, 69,120 fixed-risk rows, paired confidence intervals, and 24 negative cases.
+6. Strongest non-oracle hard-success baseline: active_view_selection.
+7. Hard-aggregate evidence: active view selection reaches task success 0.76693; v5 reaches 0.60885.
+8. Paired hard-aggregate result vs active view selection: success lower95 -0.18224, action-critical RMSE upper95 +0.02094, planning-regret upper95 +0.13293, robust-utility lower95 -0.40092.
+9. Main failure mode: physical probing improves over v4 but introduces contact risk, damage, collision exposure, and utility loss relative to non-contact active view selection and robust clearance planning.
+10. Gate vector: success false, active-view false, depth false, safety false, calibration true, utility false, ablation false, stress false, fixed-risk false, scope false.
+11. Reproducibility: `python src/run_experiment.py`, `python scripts/generate_manuscript.py`, LaTeX build, and `python scripts/validate_submission_artifacts.py` regenerate and validate the artifacts.
+12. Public packaging: `results/stress_sweep_raw.csv.gz` is tracked with manifest; raw `results/stress_sweep_raw.csv` remains local and ignored because it exceeds GitHub's hard file-size limit.
+13. Claim-validity status: ICLR-main claim killed; archive retained as a rigorous negative evidence report.
+14. Exact Downloads PDF path: `C:/Users/wangz/Downloads/94.pdf`.
+15. PDF SHA256: `122B4E1F84A7BBA741DC56FEB2F26A2C001F25D986880057D18D7AB796BF71F3`.
+16. GitHub URL: https://github.com/Jason-Wang313/94_interactive_depth_completion.
+17. Confirmation: no visible Desktop PDF copy was requested or made.

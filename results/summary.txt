@@ -1,30 +1,145 @@
-Paper 94: interactive_depth_completion evidence audit
-Seeds: 7; tasks: 4; splits: 5; episodes per seed/task: 72
-Evidence type: deterministic local active-perception manipulation simulator, not robot hardware validation.
-Terminal decision: KILL_ARCHIVE
-Reason: Proposed action-critical probing does not clear the ICLR-main gate: it fails to significantly beat the strongest non-oracle baseline (active_view_selection) on combined-stress task success, and ablations/baselines remain competitive.
+Paper 94 interactive_depth_completion v5 expanded audit
+Terminal recommendation: KILL_ARCHIVE
+ICLR main ready: no
+Reason: expanded CPU-only interactive-depth audit tests whether physical action-critical probing beats active view, robust clearance, uncertainty, diffusion, and foundation baselines; v5 remains non-submittable when damage, regret, utility, fixed-risk coverage, and scope are considered.
+Main rollout rows: 215040
+Dataset summary rows: 15360
+Main seed-metric rows: 1120
+Main metric rows: 1568
+Main pairwise rows: 1344
+Hard aggregate seed rows: 140
+Hard aggregate metric rows: 196
+Hard aggregate pairwise rows: 168
+Ablation rollout rows: 76800
+Ablation seed rows: 100
+Ablation metric rows: 140
+Stress raw rows: 604800
+Stress seed rows: 840
+Stress metric rows: 1176
+Fixed-risk raw rows: 69120
+Fixed-risk seed rows: 480
+Fixed-risk metric rows: 288
+Fixed-risk pairwise rows: 240
+Negative cases: 24
 
-Combined-stress ranking by task success:
-- oracle_depth_completion: success=1.0000 +/- 0.0000; AC-RMSE=0.0057; collision=0.0000; damage=0.0000; regret=0.0016
-- active_view_selection: success=0.7951 +/- 0.0797; AC-RMSE=0.0434; collision=0.0476; damage=0.0000; regret=0.2670
-- proposed_action_critical_interactive_depth: success=0.5144 +/- 0.1065; AC-RMSE=0.0560; collision=0.1230; damage=0.1528; regret=0.4411
-- ensemble_depth_completion: success=0.4836 +/- 0.1094; AC-RMSE=0.0597; collision=0.1324; damage=0.0000; regret=0.4203
-- uncertainty_guided_probe: success=0.4430 +/- 0.0994; AC-RMSE=0.0545; collision=0.1324; damage=0.2069; regret=0.4615
-- visuotactile_probe: success=0.4127 +/- 0.0995; AC-RMSE=0.0614; collision=0.1548; damage=0.1319; regret=0.4909
-- gaussian_splat_uncertainty: success=0.2078 +/- 0.0711; AC-RMSE=0.0794; collision=0.2331; damage=0.0000; regret=0.5798
-- learned_depth_completion: success=0.2029 +/- 0.0687; AC-RMSE=0.0751; collision=0.2619; damage=0.0000; regret=0.5633
-- raw_depth_policy: success=0.0015 +/- 0.0016; AC-RMSE=0.1463; collision=0.4931; damage=0.0000; regret=0.9087
+Frozen hard-aggregate gate:
+best_success_reference=active_view_selection
+success_challenger_reference=active_view_selection
+best_action_critical_rmse_reference=active_view_selection
+best_collision_boundary_f1_reference=active_view_selection
+best_calibration_reference=risk_aware_action_critical_depth_probe_v5
+best_utility_reference=active_view_selection
+utility_ci_reference=active_view_selection
+stress_dominated_by=active_view_selection
+proposal_success=0.60885
+best_success=0.76693
+proposal_action_critical_rmse=0.05641
+best_action_critical_rmse=0.03623
+proposal_collision=0.20547
+active_collision=0.17344
+proposal_probe_damage=0.07682
+robust_probe_damage=0.00130
+proposal_calibration_error=0.12059
+best_calibration_error=0.12059
+proposal_utility=0.01034
+best_utility=0.36148
+paired_success_lower95=-0.18224
+paired_active_regret_upper95=0.13293
+paired_rmse_upper95=0.02094
+paired_utility_lower95=-0.40092
+success_gate=False
+active_view_gate=False
+depth_gate=False
+safety_gate=False
+calibration_gate=True
+utility_gate=False
+ablation_gate=False
+mechanism_best_ablation=minus_probe_cost_model
+stress_gate=False
+fixed_risk_gate=False
+scope_gate=False
+low_signal_depth_stress: v5_coverage=0.00000
+combined_interactive_stress: v5_coverage=0.00000
 
-Gate details:
-- Strongest non-oracle success baseline: active_view_selection (0.7951)
-- Proposed success: 0.5144
-- Best non-oracle AC-RMSE baseline: active_view_selection (0.0434)
-- Proposed AC-RMSE: 0.0560
-- Proposed collision: 0.1230; cost: 0.0656; damage: 0.1528
-- Ablations matching full within 0.015 success: none
+Hard aggregate metrics:
+raw_depth_policy success=0.00000 ac_rmse=0.12980 boundary_f1=0.51076 collision=0.43620 damage=0.00365 regret=0.90593 ece=0.28951 utility=-1.23443 mechanism=0.44757
+learned_depth_completion success=0.03307 ac_rmse=0.09646 boundary_f1=0.62705 collision=0.32526 damage=0.00339 regret=0.80582 ece=0.22621 utility=-0.91411 mechanism=0.49930
+gaussian_splat_uncertainty success=0.26016 ac_rmse=0.08822 boundary_f1=0.70755 collision=0.24714 damage=0.00625 regret=0.65442 ece=0.14023 utility=-0.48902 mechanism=0.53281
+ensemble_depth_completion success=0.31406 ac_rmse=0.08214 boundary_f1=0.70328 collision=0.26198 damage=0.00365 regret=0.61991 ece=0.15314 utility=-0.41007 mechanism=0.53331
+active_view_selection success=0.76693 ac_rmse=0.03623 boundary_f1=0.81767 collision=0.17344 damage=0.00156 regret=0.32102 ece=0.12919 utility=0.36148 mechanism=0.59028
+next_best_view_planner success=0.73698 ac_rmse=0.03956 boundary_f1=0.81419 collision=0.16797 damage=0.00156 regret=0.34160 ece=0.13513 utility=0.32563 mechanism=0.58678
+visuotactile_probe success=0.39818 ac_rmse=0.06635 boundary_f1=0.73939 collision=0.24219 damage=0.07214 regret=0.57054 ece=0.15782 utility=-0.33942 mechanism=0.57618
+uncertainty_guided_probe success=0.38724 ac_rmse=0.05865 boundary_f1=0.75903 collision=0.23802 damage=0.13932 regret=0.58126 ece=0.13628 utility=-0.41930 mechanism=0.56892
+diffusion_depth_policy success=0.41224 ac_rmse=0.07616 boundary_f1=0.70693 collision=0.26250 damage=0.00156 regret=0.56011 ece=0.19284 utility=-0.26297 mechanism=0.53172
+foundation_depth_prior success=0.13906 ac_rmse=0.08664 boundary_f1=0.66102 collision=0.30026 damage=0.00130 regret=0.72554 ece=0.21021 utility=-0.70801 mechanism=0.51421
+robust_clearance_mpc success=0.65703 ac_rmse=0.08903 boundary_f1=0.73361 collision=0.10938 damage=0.00130 regret=0.41091 ece=0.15657 utility=0.24304 mechanism=0.53953
+action_critical_interactive_depth_v4 success=0.46198 ac_rmse=0.05925 boundary_f1=0.76264 collision=0.23620 damage=0.08906 regret=0.52953 ece=0.13616 utility=-0.25187 mechanism=0.61560
+risk_aware_action_critical_depth_probe_v5 success=0.60885 ac_rmse=0.05641 boundary_f1=0.78091 collision=0.20547 damage=0.07682 regret=0.43869 ece=0.12059 utility=0.01034 mechanism=0.62515
+oracle_depth_completion success=0.99557 ac_rmse=0.01953 boundary_f1=0.90327 collision=0.09531 damage=0.00781 regret=0.14353 ece=0.06907 utility=0.78314 mechanism=0.64714
 
-Failure cases:
-- leaf_occluded_fruit_grasp: success=0.2302, collision=0.2063, damage=0.2282; action-critical probing improves depth but fragile contact damage erases the closed-loop advantage
-- occluded_bin_grasping: success=0.8313, collision=0.0278, damage=0.1151; active view selection recovers enough occluded geometry without physical contact cost
-- shelf_insertion_clearance: success=0.7520, collision=0.0595, damage=0.0972; tight clearance rewards conservative uncertainty baselines as much as targeted probing
-- transparent_container_lift: success=0.2440, collision=0.1984, damage=0.1706; specular depth plus probe noise leaves uncertainty-guided and tactile baselines competitive
+Key paired hard-aggregate differences:
+risk_aware_action_critical_depth_probe_v5_minus_active_view_selection task_success: mean=-0.15807 ci95=0.02417 lower95=-0.18224 upper95=-0.13390
+risk_aware_action_critical_depth_probe_v5_minus_active_view_selection action_critical_rmse: mean=0.02018 ci95=0.00076 lower95=0.01942 upper95=0.02094
+risk_aware_action_critical_depth_probe_v5_minus_active_view_selection collision_rate: mean=0.03203 ci95=0.01657 lower95=0.01546 upper95=0.04860
+risk_aware_action_critical_depth_probe_v5_minus_active_view_selection probe_damage: mean=0.07526 ci95=0.00952 lower95=0.06574 upper95=0.08478
+risk_aware_action_critical_depth_probe_v5_minus_active_view_selection planning_regret: mean=0.11767 ci95=0.01526 lower95=0.10241 upper95=0.13293
+risk_aware_action_critical_depth_probe_v5_minus_active_view_selection robust_utility: mean=-0.35114 ci95=0.04978 lower95=-0.40092 upper95=-0.30136
+risk_aware_action_critical_depth_probe_v5_minus_active_view_selection mechanism_utility: mean=0.03487 ci95=0.00461 lower95=0.03026 upper95=0.03948
+risk_aware_action_critical_depth_probe_v5_minus_robust_clearance_mpc task_success: mean=-0.04818 ci95=0.02347 lower95=-0.07164 upper95=-0.02471
+risk_aware_action_critical_depth_probe_v5_minus_robust_clearance_mpc action_critical_rmse: mean=-0.03262 ci95=0.00076 lower95=-0.03338 upper95=-0.03186
+risk_aware_action_critical_depth_probe_v5_minus_robust_clearance_mpc collision_rate: mean=0.09609 ci95=0.01682 lower95=0.07928 upper95=0.11291
+risk_aware_action_critical_depth_probe_v5_minus_robust_clearance_mpc probe_damage: mean=0.07552 ci95=0.01043 lower95=0.06509 upper95=0.08595
+risk_aware_action_critical_depth_probe_v5_minus_robust_clearance_mpc planning_regret: mean=0.02778 ci95=0.01463 lower95=0.01315 upper95=0.04241
+risk_aware_action_critical_depth_probe_v5_minus_robust_clearance_mpc robust_utility: mean=-0.23269 ci95=0.04677 lower95=-0.27946 upper95=-0.18593
+risk_aware_action_critical_depth_probe_v5_minus_robust_clearance_mpc mechanism_utility: mean=0.08562 ci95=0.00484 lower95=0.08078 upper95=0.09045
+risk_aware_action_critical_depth_probe_v5_minus_action_critical_interactive_depth_v4 task_success: mean=0.14688 ci95=0.01794 lower95=0.12893 upper95=0.16482
+risk_aware_action_critical_depth_probe_v5_minus_action_critical_interactive_depth_v4 action_critical_rmse: mean=-0.00283 ci95=0.00113 lower95=-0.00397 upper95=-0.00170
+risk_aware_action_critical_depth_probe_v5_minus_action_critical_interactive_depth_v4 collision_rate: mean=-0.03073 ci95=0.01819 lower95=-0.04892 upper95=-0.01253
+risk_aware_action_critical_depth_probe_v5_minus_action_critical_interactive_depth_v4 probe_damage: mean=-0.01224 ci95=0.01027 lower95=-0.02251 upper95=-0.00197
+risk_aware_action_critical_depth_probe_v5_minus_action_critical_interactive_depth_v4 planning_regret: mean=-0.09084 ci95=0.01290 lower95=-0.10375 upper95=-0.07794
+risk_aware_action_critical_depth_probe_v5_minus_action_critical_interactive_depth_v4 robust_utility: mean=0.26221 ci95=0.04751 lower95=0.21470 upper95=0.30972
+risk_aware_action_critical_depth_probe_v5_minus_action_critical_interactive_depth_v4 mechanism_utility: mean=0.00955 ci95=0.00503 lower95=0.00452 upper95=0.01458
+
+Ablation utility:
+full_risk_aware_action_critical_depth_probe_v5 success=0.60898 ac_rmse=0.05613 collision=0.20755 damage=0.07148 regret=0.43753 utility=0.01296 mechanism=0.62715
+minus_action_criticality success=0.60391 ac_rmse=0.05984 collision=0.20651 damage=0.06680 regret=0.44334 utility=0.00986 mechanism=0.57604
+minus_physical_probe success=0.59232 ac_rmse=0.07255 collision=0.22799 damage=0.00091 regret=0.45132 utility=0.04027 mechanism=0.55134
+minus_damage_model success=0.55951 ac_rmse=0.05587 collision=0.21901 damage=0.09714 regret=0.46828 utility=-0.09182 mechanism=0.62090
+minus_clearance_calibration success=0.51484 ac_rmse=0.06173 collision=0.25729 damage=0.06276 regret=0.49913 utility=-0.17058 mechanism=0.60276
+minus_probe_cost_model success=0.58646 ac_rmse=0.04670 collision=0.19271 damage=0.14323 regret=0.45408 utility=-0.08297 mechanism=0.66028
+minus_occlusion_counterfactuals success=0.56081 ac_rmse=0.06240 collision=0.21758 damage=0.07344 regret=0.47027 utility=-0.07476 mechanism=0.60146
+uncertainty_only_probe success=0.55430 ac_rmse=0.05585 collision=0.21536 damage=0.13320 regret=0.48112 utility=-0.14778 mechanism=0.56359
+action_only_probe success=0.60143 ac_rmse=0.05796 collision=0.20859 damage=0.06706 regret=0.44294 utility=0.00599 mechanism=0.59659
+view_only_depth_completion success=0.76146 ac_rmse=0.03158 collision=0.16979 damage=0.00091 regret=0.32112 utility=0.36043 mechanism=0.59605
+
+Maximum combined stress:
+raw_depth_policy success=0.00000 ac_rmse=0.13400 collision=0.45000 damage=0.00458 regret=0.91034 utility=-1.25810
+learned_depth_completion success=0.03431 ac_rmse=0.09976 collision=0.35833 damage=0.00417 regret=0.81615 utility=-0.96653
+gaussian_splat_uncertainty success=0.24222 ac_rmse=0.09158 collision=0.25097 damage=0.00403 regret=0.66731 utility=-0.52125
+ensemble_depth_completion success=0.29528 ac_rmse=0.08502 collision=0.26750 damage=0.00403 regret=0.63345 utility=-0.44773
+active_view_selection success=0.75653 ac_rmse=0.03742 collision=0.18319 damage=0.00097 regret=0.32939 utility=0.33534
+next_best_view_planner success=0.72792 ac_rmse=0.04084 collision=0.18597 damage=0.00167 regret=0.35153 utility=0.28972
+visuotactile_probe success=0.37750 ac_rmse=0.06705 collision=0.24819 damage=0.09417 regret=0.58754 utility=-0.40109
+uncertainty_guided_probe success=0.36375 ac_rmse=0.05962 collision=0.24486 damage=0.16694 regret=0.60032 utility=-0.49348
+diffusion_depth_policy success=0.38944 ac_rmse=0.07923 collision=0.27931 damage=0.00167 regret=0.57820 utility=-0.31828
+foundation_depth_prior success=0.13375 ac_rmse=0.08964 collision=0.33472 damage=0.00083 regret=0.73875 utility=-0.76070
+robust_clearance_mpc success=0.62139 ac_rmse=0.09242 collision=0.12069 damage=0.00042 regret=0.43461 utility=0.17605
+action_critical_interactive_depth_v4 success=0.45347 ac_rmse=0.05993 collision=0.23292 damage=0.10875 regret=0.53807 utility=-0.28474
+risk_aware_action_critical_depth_probe_v5 success=0.57750 ac_rmse=0.05626 collision=0.22125 damage=0.09042 regret=0.46066 utility=-0.06843
+
+Fixed-risk budget 0.05:
+low_signal_depth_stress risk_aware_action_critical_depth_probe_v5 coverage=0.00000 accepted_success=0.00000 accepted_collision=0.00000 accepted_damage=0.00000
+low_signal_depth_stress active_view_selection coverage=0.00000 accepted_success=0.00000 accepted_collision=0.00000 accepted_damage=0.00000
+low_signal_depth_stress next_best_view_planner coverage=0.00000 accepted_success=0.00000 accepted_collision=0.00000 accepted_damage=0.00000
+low_signal_depth_stress visuotactile_probe coverage=0.00000 accepted_success=0.00000 accepted_collision=0.00000 accepted_damage=0.00000
+low_signal_depth_stress uncertainty_guided_probe coverage=0.00000 accepted_success=0.00000 accepted_collision=0.00000 accepted_damage=0.00000
+low_signal_depth_stress robust_clearance_mpc coverage=0.00000 accepted_success=0.00000 accepted_collision=0.00000 accepted_damage=0.00000
+combined_interactive_stress risk_aware_action_critical_depth_probe_v5 coverage=0.00000 accepted_success=0.00000 accepted_collision=0.00000 accepted_damage=0.00000
+combined_interactive_stress active_view_selection coverage=0.00000 accepted_success=0.00000 accepted_collision=0.00000 accepted_damage=0.00000
+combined_interactive_stress next_best_view_planner coverage=0.00000 accepted_success=0.00000 accepted_collision=0.00000 accepted_damage=0.00000
+combined_interactive_stress visuotactile_probe coverage=0.00000 accepted_success=0.00000 accepted_collision=0.00000 accepted_damage=0.00000
+combined_interactive_stress uncertainty_guided_probe coverage=0.00000 accepted_success=0.00000 accepted_collision=0.00000 accepted_damage=0.00000
+combined_interactive_stress robust_clearance_mpc coverage=0.00000 accepted_success=0.00000 accepted_collision=0.00000 accepted_damage=0.00000
+
+Negative cases: 24
+terminal=KILL_ARCHIVE
