@@ -2,28 +2,33 @@
 
 ## Claim Tested
 
-Interactive depth completion is useful only if the robot probes regions that are both uncertain and action-critical, improving local geometry enough to change manipulation decisions without excessive probe cost or damage.
+Risk-aware action-critical physical probing for depth completion should improve decision-relevant depth and closed-loop manipulation enough to outperform passive completion, uncertainty baselines, active/next-best-view perception, tactile probing, diffusion/foundation priors, robust clearance MPC, and the previous v4 method under hostile stress.
 
 ## Supported Claims
 
-- The v4.1 rerun confirms the benchmark is reproducible and paper-specific: four manipulation tasks, five distribution shifts, nine methods, seven seeds, ablations, stress curves, paired task/seed comparisons, and failure cases.
-- The proposed mechanism improves over raw depth, learned depth completion, Gaussian-splat uncertainty, ensemble completion, visuo-tactile probing, and uncertainty-guided probing on some combined-stress metrics.
-- The mechanism fails the main closed-loop gate because active view selection is stronger without physical contact.
+- V5 improves substantially over `action_critical_interactive_depth_v4` on hard-split success, RMSE, collision, damage, regret, and robust utility.
+- The v5 audit is much stronger than the prior local audit: 10 seeds, 6 tasks, 8 splits, 14 methods, 215,040 main rollouts, 76,800 ablation rows, 604,800 stress rows, 69,120 fixed-risk rows, paired confidence intervals, stress degradation tables, fixed-risk sweeps, and 24 indexed negative cases.
+- The method has a measurable mechanism signal: it improves over v4 and several contact-heavy or passive baselines.
+- Calibration is the only hard gate that passes in the final gate vector.
 
 ## Measured Negative Claim
 
-Under combined interactive stress, active view selection beats the proposed method:
+Under the hard aggregate, active view selection beats v5:
 
-- Task success: 0.795 +/- 0.080 vs 0.514 +/- 0.106.
-- Action-critical RMSE: 0.043 vs 0.056.
-- Collision rate: 0.048 vs 0.123.
-- Probe damage: 0.000 vs 0.153.
-- Paired success difference for proposed minus active view selection: -0.28075 +/- 0.07128.
+- Success: 0.76693 vs 0.60885.
+- Action-critical RMSE: 0.03623 vs 0.05641.
+- Collision: 0.17344 vs 0.20547.
+- Probe damage: 0.00156 vs 0.07682.
+- Regret: 0.32102 vs 0.43869.
+- Robust utility: 0.36148 vs 0.01034.
+
+V5 also has zero accepted coverage at fixed-risk budget 0.05 on both hard splits.
 
 ## Unsupported Claims Explicitly Avoided
 
 - No claim of ICLR-main submission readiness.
 - No claim of real-robot validation.
 - No claim of high-fidelity simulation.
-- No claim of state-of-the-art depth completion or manipulation.
+- No claim of state-of-the-art interactive depth completion.
 - No claim that physical probing is necessary when active viewpoint selection is available.
+- No claim that zero fixed-risk coverage can support deployable manipulation.
